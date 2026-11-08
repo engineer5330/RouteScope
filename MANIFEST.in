@@ -1,0 +1,2 @@
+include scripts/*.py
+include tests/test_*.py

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "routescope"
+version = "0.1.0"
+description = "Async DNS and TCP connection diagnostics"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "RouteScope contributors"}]
+dependencies = []
+classifiers = [
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Repository = "https://github.com/engineer5330/RouteScope"
+
+[project.scripts]
+routescope = "routescope.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
