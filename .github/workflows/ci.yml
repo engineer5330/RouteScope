@@ -30,5 +30,5 @@ jobs:
         run: python -m pip install build
       - name: Build sdist and wheel from sdist
         run: python -m build
-      - name: Install offline in a clean environment and run tests
+      - name: Install wheel offline and run packaged tests in a clean environment
         run: python scripts/check_install.py

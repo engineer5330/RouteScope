@@ -92,3 +92,39 @@ class EndToEndTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(code, 2)
                 self.assertEqual(stdout, "")
                 self.assertIn("error:", stderr)
+
+    async def test_entrypoints_ipv6_send_no_application_data(self):
+        received = asyncio.Queue()
+
+        async def handle(reader, writer):
+            try:
+                received.put_nowait(await reader.read())
+            finally:
+                writer.close()
+                await writer.wait_closed()
+
+        server = await asyncio.start_server(handle, "::1", 0)
+        port = server.sockets[0].getsockname()[1]
+        try:
+            for entrypoint in self.entrypoints:
+                with self.subTest(entrypoint=entrypoint):
+                    code, stdout, stderr = await self.run_cli(
+                        entrypoint, "diagnose", "::1", "::1", "--ports", f"{port},{port}",
+                        "--family", "ipv6", "--format", "json",
+                    )
+                    self.assertEqual(code, 0, stderr)
+                    self.assertEqual(stderr, "")
+                    document = json.loads(stdout)
+                    self.assertEqual(document["parameters"]["hosts"], ["::1"])
+                    self.assertEqual(document["parameters"]["ports"], [port])
+                    self.assertFalse(document["parameters"]["tls"])
+                    self.assertEqual(document["summary"]["tcp_checks"], 1)
+                    self.assertEqual(document["summary"]["connected"], 1)
+                    target = document["targets"][0]
+                    self.assertEqual(target["dns"]["status"], "literal")
+                    self.assertEqual(target["tcp"][0]["family"], "ipv6")
+                    self.assertIsNone(target["tcp"][0]["tls"])
+                    self.assertEqual(await asyncio.wait_for(received.get(), 5), b"")
+        finally:
+            server.close()
+            await server.wait_closed()
