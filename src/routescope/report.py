@@ -3,9 +3,10 @@
 import json
 
 from .models import DiagnosisReport
+from .trace_models import TraceReport
 
 
-def format_json(report: DiagnosisReport) -> str:
+def format_json(report: DiagnosisReport | TraceReport) -> str:
     return json.dumps(report.to_dict(), ensure_ascii=False, separators=(",", ":"))
 
 
