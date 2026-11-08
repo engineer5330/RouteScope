@@ -47,7 +47,9 @@ class EndToEndTests(unittest.IsolatedAsyncioTestCase):
                             self.assertEqual(stderr, "")
                             if output_format == "json":
                                 document = json.loads(stdout)
-                                self.assertEqual(document["schema_version"], 1)
+                                self.assertEqual(document["schema_version"], 2)
+                                self.assertFalse(document["parameters"]["tls"])
+                                self.assertIsNone(document["targets"][0]["tcp"][0]["tls"])
                                 self.assertEqual(document["status"], "ok")
                                 self.assertEqual(document["summary"]["connected"], 1)
                                 target = document["targets"][0]

@@ -1,2 +1,4 @@
 include scripts/*.py
 include tests/test_*.py
+include tests/tls_support.py
+recursive-include tests/fixtures *.pem *.key *.md

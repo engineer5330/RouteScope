@@ -47,13 +47,14 @@ def _concurrency(value: str) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="routescope", description="Diagnose system DNS resolution and TCP connections")
+    parser = argparse.ArgumentParser(prog="routescope", description="Diagnose system DNS resolution, TCP and optional TLS")
     commands = parser.add_subparsers(dest="command", required=True)
     diagnose = commands.add_parser("diagnose", help="check explicit hosts and TCP ports")
     diagnose.add_argument("hosts", metavar="HOST", nargs="+", help="one or more hostnames or IP addresses")
     diagnose.add_argument("--ports", required=True, type=_ports, metavar="80,443", help="comma-separated TCP ports")
     diagnose.add_argument("--family", choices=("ipv4", "ipv6", "both"), default="both")
-    diagnose.add_argument("--timeout", type=_timeout, default=3.0, metavar="SECONDS", help="per DNS or TCP operation (default: 3)")
+    diagnose.add_argument("--timeout", type=_timeout, default=3.0, metavar="SECONDS", help="per DNS, TCP or TLS operation (default: 3)")
+    diagnose.add_argument("--tls", action="store_true", help="verify TLS on each connected socket, on every specified port")
     diagnose.add_argument("--concurrency", type=_concurrency, default=32, metavar="N", help="maximum concurrent TCP checks (default: 32)")
     diagnose.add_argument("--format", choices=("text", "json"), default="text")
     return parser
@@ -68,7 +69,7 @@ def parse_options(argv: list[str] | None = None) -> Options:
     for host in hosts:
         if not host.strip() or host != host.strip() or any(char.isspace() for char in host) or len(host) > 253:
             parser.error(f"invalid host: {host!r}")
-    return Options(hosts, args.ports, args.family, args.timeout, args.concurrency, args.format)
+    return Options(hosts, args.ports, args.family, args.timeout, args.concurrency, args.format, args.tls)
 
 
 def main(argv: list[str] | None = None) -> int:

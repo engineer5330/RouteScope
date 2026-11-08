@@ -29,6 +29,13 @@ def format_text(report: DiagnosisReport) -> str:
                 f"  TCP {check.address} ({check.family}):{check.port} {check.status} "
                 f"in {check.duration_ms:.1f} ms{detail}"
             )
+            if check.tls is not None:
+                tls = check.tls
+                detail = f"; {tls.error}" if tls.error else ""
+                lines.append(f"    TLS {tls.status} in {tls.duration_ms:.1f} ms{detail}")
+                if tls.status == "verified":
+                    lines.append(f"      {tls.version}; cipher {tls.cipher}")
+                    lines.append(f"      Certificate valid from {tls.certificate_not_before} to {tls.certificate_not_after}")
     summary = report.summary
     lines.append(
         "\nSummary: "
@@ -36,4 +43,10 @@ def format_text(report: DiagnosisReport) -> str:
         f"{summary['timeout']} timed out, {summary['unreachable']} unreachable, "
         f"{summary['error']} other errors, {summary['dns_errors']} DNS errors"
     )
+    if report.options.tls:
+        lines.append(
+            f"TLS: {summary['tls_verified']} verified, {summary['tls_certificate_error']} certificate errors, "
+            f"{summary['tls_handshake_error']} handshake errors, {summary['tls_timeout']} timed out, "
+            f"{summary['tls_skipped']} skipped"
+        )
     return "\n".join(lines)

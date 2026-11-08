@@ -6,6 +6,7 @@ from typing import Literal
 FamilyChoice = Literal["ipv4", "ipv6", "both"]
 DnsStatus = Literal["resolved", "literal", "error", "timeout"]
 TcpStatus = Literal["connected", "refused", "timeout", "unreachable", "error"]
+TlsStatus = Literal["verified", "certificate_error", "handshake_error", "timeout", "skipped"]
 OverallStatus = Literal["ok", "partial", "failed"]
 
 
@@ -17,6 +18,7 @@ class Options:
     timeout_s: float = 3.0
     concurrency: int = 32
     output_format: Literal["text", "json"] = "text"
+    tls: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -26,6 +28,7 @@ class Options:
             "timeout_s": self.timeout_s,
             "concurrency": self.concurrency,
             "format": self.output_format,
+            "tls": self.tls,
         }
 
 
@@ -57,6 +60,21 @@ class DnsResult:
 
 
 @dataclass(frozen=True)
+class TlsResult:
+    status: TlsStatus
+    duration_ms: float
+    version: str | None = None
+    cipher: str | None = None
+    certificate_not_before: str | None = None
+    certificate_not_after: str | None = None
+    error: str | None = None
+    verify_code: int | None = None
+
+    def to_dict(self) -> dict:
+        return dict(vars(self))
+
+
+@dataclass(frozen=True)
 class TcpResult:
     address: str
     family: Literal["ipv4", "ipv6"]
@@ -64,6 +82,7 @@ class TcpResult:
     status: TcpStatus
     duration_ms: float
     error: str | None = None
+    tls: TlsResult | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -73,6 +92,7 @@ class TcpResult:
             "status": self.status,
             "duration_ms": self.duration_ms,
             "error": self.error,
+            "tls": self.tls.to_dict() if self.tls is not None else None,
         }
 
 
@@ -100,7 +120,7 @@ class DiagnosisReport:
 
     def to_dict(self) -> dict:
         return {
-            "schema_version": 1,
+            "schema_version": 2,
             "parameters": self.options.to_dict(),
             "status": self.status,
             "duration_ms": self.duration_ms,

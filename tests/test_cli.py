@@ -13,6 +13,8 @@ class CliTests(unittest.TestCase):
         options = parse_options(["diagnose", "localhost", "localhost", "--ports", "80,443,80"])
         self.assertEqual(options.hosts, ("localhost",))
         self.assertEqual(options.ports, (80, 443))
+        self.assertFalse(options.tls)
+        self.assertTrue(parse_options(["diagnose", "localhost", "--ports", "8000", "--tls"]).tls)
         for argv in (
             ["diagnose", "localhost", "--ports", "0"],
             ["diagnose", "localhost", "--ports", "1-100"],

@@ -36,7 +36,7 @@ class DiagnosisTests(unittest.IsolatedAsyncioTestCase):
             [("127.0.0.2", 80), ("127.0.0.2", 443), ("127.0.0.1", 80), ("127.0.0.1", 443)],
         )
         document = json.loads(format_json(report))
-        self.assertEqual(document["schema_version"], 1)
+        self.assertEqual(document["schema_version"], 2)
         self.assertEqual(document["parameters"]["ports"], [80, 443])
         self.assertIn("duration_ms", document["targets"][0]["tcp"][0])
 
